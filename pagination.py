@@ -1,24 +1,34 @@
-def modify_based_on_page_position(pages, current_page, total_pages, boundaries, around):
-    if (current_page+around) < (total_pages-boundaries) and (current_page-around) > (boundaries):
-        del pages[current_page+around:-boundaries]
+def check_which_pages_should_be_inserted_in_pageslist(pages, current_page, total_pages, boundaries, around):    
+    if (current_page+around) >= (total_pages-boundaries) and (current_page-around-1) <= (boundaries):
+        pages.extend(list(range(1, total_pages+1)))
+    elif (current_page+around) < (total_pages-boundaries) and (current_page-around-1) > (boundaries):        
+        pages.extend(list(range(1, boundaries+1)))
+        pages.insert(boundaries, "...")
+        pages.extend(list(range((current_page-around), (current_page+around+1))))
+        pages.extend(list(range((total_pages-boundaries+1), (total_pages+1))))
         pages.insert(-boundaries, "...")
-        del pages[boundaries:(current_page-around-1)]
-        pages.insert(boundaries, "...")    
-    elif (current_page+around) < (total_pages-boundaries):
-        del pages[current_page+around:-boundaries]
-        pages.insert(-boundaries, "...")    
-    elif (current_page-around) > (boundaries):
-        del pages[boundaries:(current_page-around-1)]
-        pages.insert(boundaries, "...")        
+    elif (current_page+around) < (total_pages-boundaries):        
+        pages.extend(list(range(1, current_page+around+1)))
+        pages.extend(list(range((total_pages-boundaries+1), (total_pages+1))))
+        pages.insert(-boundaries, "...")
+    elif (current_page-around-1) > (boundaries):        
+        pages.extend(list(range(1, boundaries+1)))
+        pages.insert(boundaries, "...")              
+        pages.extend(list(range((current_page-around), (total_pages+1))))
 
-def modify_when_no_boundaries(pages, current_page, total_pages, around):
-    del pages[(current_page+around):len(pages)]
-    if around < current_page:
-        if (current_page - around) > pages[0]:
-            del pages[0:current_page-around-1]
-            pages.insert(0, "...")
-    if (current_page + around) < total_pages:
-        pages.insert(len(pages),"...")
+def check_which_pages_should_be_inserted_in_pageslist_if_boundaries_is_zero(pages, current_page, total_pages, around):    
+    if (current_page+around) >= (total_pages) and (current_page-around) <= 1:
+        pages.extend(list(range(1, total_pages+1)))
+    elif (current_page+around) < (total_pages) and (current_page-around) > 1:                
+        pages.insert(0, "...")
+        pages.extend(list(range((current_page-around), current_page+around+1)))
+        pages.insert(total_pages, "...")
+    elif (current_page+around) < (total_pages):             
+        pages.extend(list(range(1, current_page+around+1)))
+        pages.insert(total_pages, "...")
+    elif (current_page-around) > 1:                
+        pages.insert(0, "...")
+        pages.extend(list(range((current_page-around), (total_pages+1))))
 
 def variable_isvalid(current_page, total_pages, boundaries, around):
     if total_pages < 1:
@@ -38,22 +48,24 @@ def pagination(current_page, total_pages, boundaries, around):
 
     valid_variables = variable_isvalid(current_page, total_pages, boundaries, around)
     current_page, total_pages, boundaries, around = valid_variables
-    pages = list(range(1, total_pages+1))    
-    if boundaries >= (current_page+around) or (total_pages-boundaries) < (current_page-around):
+    pages = []
+    if boundaries >= (current_page+around) or (total_pages-boundaries+1) <= (current_page-around):
         if total_pages / 2 <= boundaries:
-            [print(page, end=" ") for page in pages]  
+            pages.extend(list(range(1, total_pages+1)))
+            print(*pages, end=" ")
             return pages
-        del pages[boundaries:-boundaries]
+        pages.extend(list(range(1, boundaries+1)))
+        pages.extend(list(range((total_pages-boundaries+1), (total_pages+1))))
         pages.insert(boundaries, "...")
     else:
         if boundaries != 0:
-            modify_based_on_page_position(pages, current_page, total_pages, boundaries, around)
+            check_which_pages_should_be_inserted_in_pageslist(pages, current_page, total_pages, boundaries, around)
         else:
-            modify_when_no_boundaries(pages, current_page, total_pages, around)
+            check_which_pages_should_be_inserted_in_pageslist_if_boundaries_is_zero(pages, current_page, total_pages, around)        
 
-    [print(page, end=" ") for page in pages]  
+    print(*pages, end=" ")  
     return pages
+    
 
-
-if __name__ == '__main__':  
-    pagination(6, 20, 2, 1)
+if __name__ == '__main__':
+    pagination(1, 1, 1, 1)
